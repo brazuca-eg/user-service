@@ -1,0 +1,27 @@
+# ============ Maven ============
+target/
+*.jar
+*.war
+*.ear
+
+# ============ IntelliJ ============
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# ============ OS ============
+.DS_Store
+Thumbs.db
+
+# ============ Logs ============
+*.log
+logs/
+
+# ============ Env / secrets ============
+.env
+.env.local
+.env.*.local
+dev-keys/
+*.pem
+*.key
