@@ -1,0 +1,33 @@
+package com.beamcard.user.persistence.repository;
+
+import com.beamcard.user.auth.model.User;
+import com.beamcard.user.auth.repository.UserRepository;
+import com.beamcard.user.persistence.mapper.UserPersistenceMapper;
+import com.beamcard.user.persistence.model.UserJpa;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+@Repository
+@RequiredArgsConstructor
+class UserRepositoryImpl implements UserRepository {
+
+    private final UserJpaRepository jpaRepository;
+    private final UserPersistenceMapper mapper;
+
+    @Override
+    public boolean existsByEmail(String email) {
+        return jpaRepository.existsByEmail(email);
+    }
+
+    @Override
+    public Optional<User> findByEmail(String email) {
+        return jpaRepository.findByEmail(email).map(mapper::toDomain);
+    }
+
+    @Override
+    public User save(User user) {
+        UserJpa saved = jpaRepository.save(mapper.toJpa(user));
+        return mapper.toDomain(saved);
+    }
+}
