@@ -2,6 +2,7 @@ package com.beamcard.user.persistence.repository;
 
 import com.beamcard.user.auth.repository.UsernameRepository;
 import com.beamcard.user.persistence.model.UsernameJpa;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -15,6 +16,11 @@ class UsernameRepositoryImpl implements UsernameRepository {
     @Override
     public boolean existsByUsername(String username) {
         return jpaRepository.existsById(username);
+    }
+
+    @Override
+    public Optional<String> findUsernameByUserId(UUID userId) {
+        return jpaRepository.findByUserId(userId).map(UsernameJpa::getUsername);
     }
 
     @Override

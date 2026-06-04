@@ -39,6 +39,9 @@ class SignupControllerTest {
     @MockBean
     SignupService signupService;
 
+    @MockBean
+    JwtService jwtService;
+
     @Test
     void signup_returns201_withSnakeCaseBody() throws Exception {
         UUID id = UUID.randomUUID();

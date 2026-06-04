@@ -5,6 +5,7 @@ import com.beamcard.user.auth.repository.UserRepository;
 import com.beamcard.user.persistence.mapper.UserPersistenceMapper;
 import com.beamcard.user.persistence.model.UserJpa;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -23,6 +24,11 @@ class UserRepositoryImpl implements UserRepository {
     @Override
     public Optional<User> findByEmail(String email) {
         return jpaRepository.findByEmail(email).map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<User> findById(UUID id) {
+        return jpaRepository.findById(id).map(mapper::toDomain);
     }
 
     @Override

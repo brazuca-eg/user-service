@@ -1,11 +1,13 @@
 package com.beamcard.user.auth.service;
 
 import com.beamcard.user.auth.model.User;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import java.security.KeyPair;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -35,5 +37,19 @@ public class JwtServiceImpl implements JwtService {
                 .compact();
 
         return new IssuedToken(jwt, accessTokenTtl.toSeconds());
+    }
+
+    @Override
+    public AuthenticatedUser verify(String token) {
+        Claims claims = Jwts.parser()
+                .verifyWith(keyPair.getPublic())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return new AuthenticatedUser(
+                UUID.fromString(claims.getSubject()),
+                claims.get("username", String.class),
+                claims.get("plan", String.class));
     }
 }

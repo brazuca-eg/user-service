@@ -29,14 +29,6 @@ public class SignupController {
         SignupResult result =
                 signupService.signup(new SignupCommand(request.email(), request.password(), request.username()));
 
-        return new AuthResponse(
-                result.token().value(),
-                "Bearer",
-                result.token().expiresInSeconds(),
-                new AuthResponse.UserSummary(
-                        result.user().getId(),
-                        result.user().getEmail(),
-                        result.username(),
-                        result.user().getPlan().name().toLowerCase()));
+        return AuthResponse.of(result.user(), result.username(), result.token());
     }
 }
