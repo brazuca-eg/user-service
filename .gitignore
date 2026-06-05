@@ -26,3 +26,6 @@ logs/
 dev-keys/
 *.pem
 *.key
+
+# JWT dev signing keys
+.dev-keys/

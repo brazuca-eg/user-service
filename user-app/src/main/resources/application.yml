@@ -33,9 +33,21 @@ management:
 beamcard:
   auth:
     access-token-ttl: PT15M
+    jwt:
+      private-key-location: ${JWT_PRIVATE_KEY_LOCATION:.dev-keys/jwt-private.pem}
+      public-key-location: ${JWT_PUBLIC_KEY_LOCATION:.dev-keys/jwt-public.pem}
+      #Dev only. Set false in prod so a missing key fails fast.
+      generate-if-missing: ${JWT_GENERATE_IF_MISSING:true}
 
   cors:
     allowed-origins: http://localhost:5173
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+  instance:
+    prefer-ip-address: true
 
 logging:
   level:

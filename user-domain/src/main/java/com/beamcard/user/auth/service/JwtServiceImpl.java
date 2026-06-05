@@ -1,9 +1,9 @@
 package com.beamcard.user.auth.service;
 
+import com.beamcard.user.auth.model.SigningKey;
 import com.beamcard.user.auth.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import java.security.KeyPair;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
@@ -14,11 +14,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtServiceImpl implements JwtService {
 
-    private final KeyPair keyPair;
+    private final SigningKey signingKey;
     private final Duration accessTokenTtl;
 
-    public JwtServiceImpl(KeyPair jwtKeyPair, @Value("${beamcard.auth.access-token-ttl}") Duration accessTokenTtl) {
-        this.keyPair = jwtKeyPair;
+    public JwtServiceImpl(SigningKey signingKey, @Value("${beamcard.auth.access-token-ttl}") Duration accessTokenTtl) {
+        this.signingKey = signingKey;
         this.accessTokenTtl = accessTokenTtl;
     }
 
@@ -28,12 +28,15 @@ public class JwtServiceImpl implements JwtService {
         Instant exp = now.plus(accessTokenTtl);
 
         String jwt = Jwts.builder()
+                .header()
+                .keyId(signingKey.keyId())
+                .and()
                 .subject(user.getId().toString())
                 .claim("username", username)
                 .claim("plan", user.getPlan().name().toLowerCase())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(exp))
-                .signWith(keyPair.getPrivate(), Jwts.SIG.RS256)
+                .signWith(signingKey.keyPair().getPrivate(), Jwts.SIG.RS256)
                 .compact();
 
         return new IssuedToken(jwt, accessTokenTtl.toSeconds());
@@ -42,7 +45,7 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public AuthenticatedUser verify(String token) {
         Claims claims = Jwts.parser()
-                .verifyWith(keyPair.getPublic())
+                .verifyWith(signingKey.keyPair().getPublic())
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

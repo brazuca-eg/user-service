@@ -3,6 +3,7 @@ package com.beamcard.user.auth.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.beamcard.user.auth.model.SigningKey;
 import com.beamcard.user.auth.model.User;
 import com.beamcard.user.auth.model.UserSubscriptionPlan;
 import io.jsonwebtoken.Claims;
@@ -30,7 +31,7 @@ class JwtServiceImplTest {
         generator.initialize(2048);
         keyPair = generator.generateKeyPair();
 
-        jwtService = new JwtServiceImpl(keyPair, TTL);
+        jwtService = new JwtServiceImpl(new SigningKey(keyPair, "test-kid"), TTL);
 
         user = User.builder()
                 .id(UUID.randomUUID())
@@ -94,7 +95,7 @@ class JwtServiceImplTest {
     void verifyRejectsATokenSignedWithADifferentKey() throws NoSuchAlgorithmException {
         KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
         generator.initialize(2048);
-        JwtServiceImpl attacker = new JwtServiceImpl(generator.generateKeyPair(), TTL);
+        JwtServiceImpl attacker = new JwtServiceImpl(new SigningKey(generator.generateKeyPair(), "other-kid"), TTL);
         String forged = attacker.issueAccessToken(user, "alice").value();
 
         assertThatThrownBy(() -> jwtService.verify(forged)).isInstanceOf(SignatureException.class);
