@@ -9,5 +9,7 @@ public interface UsernameRepository {
 
     Optional<String> findUsernameByUserId(UUID userId);
 
+    Optional<UUID> findUserIdByUsername(String username);
+
     void save(String username, UUID userId);
 }

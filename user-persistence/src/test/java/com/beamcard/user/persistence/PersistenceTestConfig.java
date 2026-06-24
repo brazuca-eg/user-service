@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @SpringBootConfiguration
 @EnableAutoConfiguration
 @EntityScan("com.beamcard.user.persistence.model")
-@EnableJpaRepositories("com.beamcard.user.persistence.repository")
+@EnableJpaRepositories("com.beamcard.user.persistence.repository.jpa")
 class PersistenceTestConfig {}

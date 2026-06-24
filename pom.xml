@@ -23,6 +23,7 @@
         <module>user-domain</module>
         <module>user-persistence</module>
         <module>user-rest</module>
+        <module>user-client</module>
     </modules>
 
     <properties>
@@ -65,6 +66,11 @@
             <dependency>
                 <groupId>com.beamcard</groupId>
                 <artifactId>user-rest</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.beamcard</groupId>
+                <artifactId>user-client</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

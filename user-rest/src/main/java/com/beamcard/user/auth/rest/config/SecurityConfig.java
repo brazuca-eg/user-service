@@ -39,6 +39,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/actuator/**")
                         .permitAll()
+                        .requestMatchers("/internal/**")
+                        .permitAll() // service-to-service; not exposed via the gateway
                         .requestMatchers("/.well-known/jwks.json")
                         .permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html")

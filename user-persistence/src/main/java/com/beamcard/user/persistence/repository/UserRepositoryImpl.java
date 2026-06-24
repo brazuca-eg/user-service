@@ -4,14 +4,13 @@ import com.beamcard.user.auth.model.User;
 import com.beamcard.user.auth.repository.UserRepository;
 import com.beamcard.user.persistence.mapper.UserPersistenceMapper;
 import com.beamcard.user.persistence.model.UserJpa;
+import com.beamcard.user.persistence.repository.jpa.UserJpaRepository;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Repository;
 
-@Repository
 @RequiredArgsConstructor
-class UserRepositoryImpl implements UserRepository {
+public class UserRepositoryImpl implements UserRepository {
 
     private final UserJpaRepository jpaRepository;
     private final UserPersistenceMapper mapper;

@@ -7,5 +7,7 @@ public interface AccountService {
 
     AccountView getById(UUID userId);
 
+    AccountView getByUsername(String username);
+
     record AccountView(User user, String username) {}
 }

@@ -8,16 +8,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
-@Service
 public class JwtServiceImpl implements JwtService {
 
     private final SigningKey signingKey;
     private final Duration accessTokenTtl;
 
-    public JwtServiceImpl(SigningKey signingKey, @Value("${beamcard.auth.access-token-ttl}") Duration accessTokenTtl) {
+    public JwtServiceImpl(SigningKey signingKey, Duration accessTokenTtl) {
         this.signingKey = signingKey;
         this.accessTokenTtl = accessTokenTtl;
     }
