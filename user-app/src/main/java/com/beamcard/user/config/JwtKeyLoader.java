@@ -1,7 +1,9 @@
 package com.beamcard.user.config;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyPair;
@@ -20,6 +22,10 @@ class JwtKeyLoader {
     private final JwtProperties properties;
 
     KeyPair load() {
+        if (properties.hasInlinePem()) {
+            return readInline();
+        }
+
         Path privatePath = Path.of(properties.privateKeyLocation());
         Path publicPath = Path.of(properties.publicKeyLocation());
 
@@ -30,6 +36,19 @@ class JwtKeyLoader {
             throw new IllegalStateException(("JWT signing keys not found "));
         }
         return generateAndPersist(privatePath, publicPath);
+    }
+
+    // Prod path: PEM contents come straight from env vars
+    private KeyPair readInline() {
+        RSAPrivateKey privateKey = RsaKeyConverters.pkcs8().convert(pemStream(properties.privateKeyPem()));
+        RSAPublicKey publicKey = RsaKeyConverters.x509().convert(pemStream(properties.publicKeyPem()));
+        log.debug("Loaded JWT signing key from inline PEM");
+        return new KeyPair(publicKey, privateKey);
+    }
+
+    private static InputStream pemStream(String pem) {
+        String normalized = pem.replace("\\n", "\n").trim();
+        return new ByteArrayInputStream(normalized.getBytes(StandardCharsets.UTF_8));
     }
 
     private KeyPair read(Path privatePath, Path publicPath) {
