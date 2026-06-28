@@ -1,14 +1,18 @@
 package com.beamcard.user.auth.conf;
 
 import com.beamcard.user.auth.model.SigningKey;
+import com.beamcard.user.auth.repository.PasswordResetTokenRepository;
 import com.beamcard.user.auth.repository.UserRepository;
 import com.beamcard.user.auth.repository.UsernameRepository;
 import com.beamcard.user.auth.service.AccountService;
 import com.beamcard.user.auth.service.AccountServiceImpl;
+import com.beamcard.user.auth.service.EmailSender;
 import com.beamcard.user.auth.service.JwtService;
 import com.beamcard.user.auth.service.JwtServiceImpl;
 import com.beamcard.user.auth.service.LoginService;
 import com.beamcard.user.auth.service.LoginServiceImpl;
+import com.beamcard.user.auth.service.PasswordResetService;
+import com.beamcard.user.auth.service.PasswordResetServiceImpl;
 import com.beamcard.user.auth.service.SignupService;
 import com.beamcard.user.auth.service.SignupServiceImpl;
 import java.time.Duration;
@@ -49,5 +53,17 @@ public class DomainConfig {
     @Bean
     public AccountService accountService(UserRepository userRepository, UsernameRepository usernameRepository) {
         return new AccountServiceImpl(userRepository, usernameRepository);
+    }
+
+    @Bean
+    public PasswordResetService passwordResetService(
+            UserRepository userRepository,
+            PasswordResetTokenRepository passwordResetTokenRepository,
+            PasswordEncoder passwordEncoder,
+            EmailSender emailSender,
+            @Value("${beamcard.auth.password-reset.token-ttl}") Duration tokenTtl,
+            @Value("${beamcard.auth.password-reset.reset-url-template}") String resetUrlTemplate) {
+        return new PasswordResetServiceImpl(
+                userRepository, passwordResetTokenRepository, passwordEncoder, emailSender, tokenTtl, resetUrlTemplate);
     }
 }

@@ -6,6 +6,6 @@ RUN mvn -B -ntp -s .mvn/settings.xml -pl user-app -am -DskipTests clean package
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 COPY --from=build /workspace/user-app/target/*.jar app.jar
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75"
+ENV JAVA_TOOL_OPTIONS="-Xmx256m"
 EXPOSE 8070
 ENTRYPOINT ["java", "-jar", "app.jar"]

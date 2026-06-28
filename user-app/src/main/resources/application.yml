@@ -38,6 +38,16 @@ beamcard:
       public-key-location: ${JWT_PUBLIC_KEY_LOCATION:.dev-keys/jwt-public.pem}
       #Dev only. Set false in prod so a missing key fails fast.
       generate-if-missing: ${JWT_GENERATE_IF_MISSING:true}
+    password-reset:
+      token-ttl: ${PASSWORD_RESET_TOKEN_TTL:PT30M}
+      reset-url-template: ${PASSWORD_RESET_URL:http://localhost:5173/reset-password?token=%s}
+
+  email:
+    provider: ${EMAIL_PROVIDER:log}
+    from: ${EMAIL_FROM:beamcard<test@resend.dev>}
+    resend:
+      api-key: ${RESEND_API_KEY:}
+      base-url: ${RESEND_BASE_URL:https://api.resend.com}
 
   cors:
     allowed-origins: http://localhost:5173

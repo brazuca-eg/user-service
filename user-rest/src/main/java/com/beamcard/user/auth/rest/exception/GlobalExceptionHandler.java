@@ -3,6 +3,7 @@ package com.beamcard.user.auth.rest.exception;
 import com.beamcard.user.auth.exception.AccountNotActiveException;
 import com.beamcard.user.auth.exception.EmailAlreadyExistsException;
 import com.beamcard.user.auth.exception.InvalidCredentialsException;
+import com.beamcard.user.auth.exception.InvalidResetTokenException;
 import com.beamcard.user.auth.exception.UserNotFoundException;
 import com.beamcard.user.auth.exception.UsernameAlreadyExistsException;
 import jakarta.validation.ConstraintViolation;
@@ -50,6 +51,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(UserNotFoundException.class)
     ProblemDetail handle(UserNotFoundException e) {
         return problem(HttpStatus.NOT_FOUND, "user_not_found", "User not found.");
+    }
+
+    @ExceptionHandler(InvalidResetTokenException.class)
+    ProblemDetail handle(InvalidResetTokenException e) {
+        return problem(HttpStatus.BAD_REQUEST, "invalid_reset_token", "This reset link is invalid or has expired.");
     }
 
     @Override
