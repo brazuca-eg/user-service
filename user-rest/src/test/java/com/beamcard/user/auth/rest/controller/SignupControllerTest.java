@@ -54,7 +54,7 @@ class SignupControllerTest {
 
         when(signupService.signup(any()))
                 .thenReturn(new SignupService.SignupResult(
-                        domainUser, "alice", new JwtService.IssuedToken("jwt.value", 900)));
+                        domainUser, "alice", new JwtService.IssuedToken("jwt.value", 900), "refresh.value"));
 
         String body = objectMapper.writeValueAsString(
                 new SignupRequest("alice@example.com", "correcthorsebatterystaple", "alice"));

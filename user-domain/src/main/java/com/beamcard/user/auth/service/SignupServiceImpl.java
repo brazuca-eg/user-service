@@ -20,6 +20,7 @@ public class SignupServiceImpl implements SignupService {
     private final UsernameRepository usernameRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     @Transactional
@@ -42,8 +43,9 @@ public class SignupServiceImpl implements SignupService {
         usernameRepository.save(command.username(), saved.getId());
 
         JwtService.IssuedToken token = jwtService.issueAccessToken(saved, command.username());
+        String refreshToken = refreshTokenService.issueRefreshToken(saved.getId());
         log.info("Signup succeeded for user {} ({})", saved.getId(), command.email());
 
-        return new SignupResult(saved, command.username(), token);
+        return new SignupResult(saved, command.username(), token, refreshToken);
     }
 }

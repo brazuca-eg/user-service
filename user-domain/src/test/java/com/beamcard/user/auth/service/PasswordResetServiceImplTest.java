@@ -15,6 +15,7 @@ import com.beamcard.user.auth.model.User;
 import com.beamcard.user.auth.model.UserStatus;
 import com.beamcard.user.auth.model.UserSubscriptionPlan;
 import com.beamcard.user.auth.repository.PasswordResetTokenRepository;
+import com.beamcard.user.auth.repository.RefreshTokenRepository;
 import com.beamcard.user.auth.repository.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -43,6 +44,9 @@ class PasswordResetServiceImplTest {
     PasswordResetTokenRepository tokenRepository;
 
     @Mock
+    RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
     PasswordEncoder passwordEncoder;
 
     @Mock
@@ -56,7 +60,13 @@ class PasswordResetServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new PasswordResetServiceImpl(
-                userRepository, tokenRepository, passwordEncoder, emailSender, Duration.ofMinutes(30), URL_TEMPLATE);
+                userRepository,
+                tokenRepository,
+                refreshTokenRepository,
+                passwordEncoder,
+                emailSender,
+                Duration.ofMinutes(30),
+                URL_TEMPLATE);
         userId = UUID.randomUUID();
         activeUser = User.builder()
                 .id(userId)
@@ -131,6 +141,7 @@ class PasswordResetServiceImplTest {
         ArgumentCaptor<PasswordResetToken> savedToken = ArgumentCaptor.forClass(PasswordResetToken.class);
         verify(tokenRepository).save(savedToken.capture());
         assertThat(savedToken.getValue().getUsedAt()).isNotNull();
+        verify(refreshTokenRepository).revokeAllForUser(userId);
     }
 
     @Test

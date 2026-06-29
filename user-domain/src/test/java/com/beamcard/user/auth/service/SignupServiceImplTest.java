@@ -40,6 +40,9 @@ class SignupServiceImplTest {
     @Mock
     JwtService jwtService;
 
+    @Mock
+    RefreshTokenService refreshTokenService;
+
     @InjectMocks
     SignupServiceImpl signupService;
 
@@ -63,6 +66,7 @@ class SignupServiceImplTest {
         });
         when(jwtService.issueAccessToken(any(User.class), any()))
                 .thenReturn(new JwtService.IssuedToken("dummy.jwt.token", 900));
+        when(refreshTokenService.issueRefreshToken(newUserId)).thenReturn("refresh.value");
 
         SignupService.SignupResult result = signupService.signup(validCommand);
 
@@ -80,6 +84,7 @@ class SignupServiceImplTest {
         assertThat(result.user().getId()).isEqualTo(newUserId);
         assertThat(result.user().getEmail()).isEqualTo("alice@example.com");
         assertThat(result.username()).isEqualTo("alice");
+        assertThat(result.refreshToken()).isEqualTo("refresh.value");
     }
 
     @Test
