@@ -3,6 +3,7 @@ package com.beamcard.user.auth.rest.exception;
 import com.beamcard.user.auth.exception.AccountNotActiveException;
 import com.beamcard.user.auth.exception.EmailAlreadyExistsException;
 import com.beamcard.user.auth.exception.InvalidCredentialsException;
+import com.beamcard.user.auth.exception.InvalidRefreshTokenException;
 import com.beamcard.user.auth.exception.InvalidResetTokenException;
 import com.beamcard.user.auth.exception.UserNotFoundException;
 import com.beamcard.user.auth.exception.UsernameAlreadyExistsException;
@@ -56,6 +57,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidResetTokenException.class)
     ProblemDetail handle(InvalidResetTokenException e) {
         return problem(HttpStatus.BAD_REQUEST, "invalid_reset_token", "This reset link is invalid or has expired.");
+    }
+
+    @ExceptionHandler(InvalidRefreshTokenException.class)
+    ProblemDetail handle(InvalidRefreshTokenException e) {
+        return problem(HttpStatus.UNAUTHORIZED, "invalid_refresh_token", "Your session has expired. Please sign in again.");
     }
 
     @Override

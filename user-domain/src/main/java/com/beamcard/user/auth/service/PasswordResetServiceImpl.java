@@ -5,6 +5,7 @@ import com.beamcard.user.auth.model.PasswordResetToken;
 import com.beamcard.user.auth.model.User;
 import com.beamcard.user.auth.model.UserStatus;
 import com.beamcard.user.auth.repository.PasswordResetTokenRepository;
+import com.beamcard.user.auth.repository.RefreshTokenRepository;
 import com.beamcard.user.auth.repository.UserRepository;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -28,6 +29,7 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final EmailSender emailSender;
     private final Duration tokenTtl;
@@ -78,7 +80,8 @@ public class PasswordResetServiceImpl implements PasswordResetService {
 
         userRepository.save(user.withPasswordHash(passwordEncoder.encode(newRawPassword)));
         tokenRepository.save(token.withUsedAt(Instant.now()));
-        log.info("Password reset completed for user {}.", user.getId());
+        refreshTokenRepository.revokeAllForUser(user.getId());
+        log.info("Password reset completed for user {}; existing sessions revoked.", user.getId());
     }
 
     private String generateRawToken() {

@@ -29,6 +29,6 @@ public class SignupController {
         SignupResult result =
                 signupService.signup(new SignupCommand(request.email(), request.password(), request.username()));
 
-        return AuthResponse.of(result.user(), result.username(), result.token());
+        return AuthResponse.of(result.user(), result.username(), result.token(), result.refreshToken());
     }
 }

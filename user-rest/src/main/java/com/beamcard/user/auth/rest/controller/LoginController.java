@@ -24,6 +24,6 @@ public class LoginController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         LoginResult result = loginService.login(new LoginCommand(request.email(), request.password()));
-        return AuthResponse.of(result.user(), result.username(), result.token());
+        return AuthResponse.of(result.user(), result.username(), result.token(), result.refreshToken());
     }
 }

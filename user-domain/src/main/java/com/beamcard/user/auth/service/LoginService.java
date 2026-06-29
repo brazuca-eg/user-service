@@ -8,5 +8,5 @@ public interface LoginService {
 
     record LoginCommand(String email, String rawPassword) {}
 
-    record LoginResult(User user, String username, JwtService.IssuedToken token) {}
+    record LoginResult(User user, String username, JwtService.IssuedToken token, String refreshToken) {}
 }

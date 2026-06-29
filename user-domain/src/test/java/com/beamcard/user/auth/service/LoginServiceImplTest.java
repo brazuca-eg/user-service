@@ -39,6 +39,9 @@ class LoginServiceImplTest {
     @Mock
     JwtService jwtService;
 
+    @Mock
+    RefreshTokenService refreshTokenService;
+
     @InjectMocks
     LoginServiceImpl loginService;
 
@@ -66,12 +69,14 @@ class LoginServiceImplTest {
                 .thenReturn(true);
         when(usernameRepository.findUsernameByUserId(userId)).thenReturn(Optional.of("alice"));
         when(jwtService.issueAccessToken(activeUser, "alice")).thenReturn(new JwtService.IssuedToken("jwt.value", 900));
+        when(refreshTokenService.issueRefreshToken(userId)).thenReturn("refresh.value");
 
         LoginService.LoginResult result = loginService.login(command);
 
         assertThat(result.user()).isSameAs(activeUser);
         assertThat(result.username()).isEqualTo("alice");
         assertThat(result.token().value()).isEqualTo("jwt.value");
+        assertThat(result.refreshToken()).isEqualTo("refresh.value");
     }
 
     @Test

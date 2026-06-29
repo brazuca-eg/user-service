@@ -52,7 +52,8 @@ class LoginControllerTest {
                 .status(UserStatus.ACTIVE)
                 .build();
         when(loginService.login(any()))
-                .thenReturn(new LoginService.LoginResult(user, "alice", new JwtService.IssuedToken("jwt.value", 900)));
+                .thenReturn(new LoginService.LoginResult(
+                        user, "alice", new JwtService.IssuedToken("jwt.value", 900), "refresh.value"));
 
         String body =
                 objectMapper.writeValueAsString(new LoginRequest("alice@example.com", "correcthorsebatterystaple"));
@@ -62,6 +63,7 @@ class LoginControllerTest {
                         .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.access_token").value("jwt.value"))
+                .andExpect(jsonPath("$.refresh_token").value("refresh.value"))
                 .andExpect(jsonPath("$.token_type").value("Bearer"))
                 .andExpect(jsonPath("$.user.username").value("alice"))
                 .andExpect(jsonPath("$.user.plan").value("free"));

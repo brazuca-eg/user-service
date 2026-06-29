@@ -18,6 +18,7 @@ public class LoginServiceImpl implements LoginService {
     private final UsernameRepository usernameRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     @Override
     public LoginResult login(LoginCommand command) {
@@ -35,8 +36,9 @@ public class LoginServiceImpl implements LoginService {
                 .orElseThrow(() -> new IllegalStateException("user %s has no username".formatted(user.getId())));
 
         JwtService.IssuedToken token = jwtService.issueAccessToken(user, username);
+        String refreshToken = refreshTokenService.issueRefreshToken(user.getId());
         log.info("Login succeeded for user {} ({})", user.getId(), user.getEmail());
 
-        return new LoginResult(user, username, token);
+        return new LoginResult(user, username, token, refreshToken);
     }
 }
