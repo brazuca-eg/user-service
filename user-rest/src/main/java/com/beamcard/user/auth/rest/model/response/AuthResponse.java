@@ -7,7 +7,7 @@ import java.util.UUID;
 public record AuthResponse(
         String accessToken, String tokenType, long expiresIn, String refreshToken, UserSummary user) {
 
-    public record UserSummary(UUID id, String email, String username, String plan) {}
+    public record UserSummary(UUID id, String email, String username, String plan, String locale) {}
 
     public static AuthResponse of(User user, String username, JwtService.IssuedToken token, String refreshToken) {
         return new AuthResponse(
@@ -19,6 +19,7 @@ public record AuthResponse(
                         user.getId(),
                         user.getEmail(),
                         username,
-                        user.getPlan().name().toLowerCase()));
+                        user.getPlan().name().toLowerCase(),
+                        user.getLocale()));
     }
 }

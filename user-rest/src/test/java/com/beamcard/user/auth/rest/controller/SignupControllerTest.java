@@ -50,6 +50,7 @@ class SignupControllerTest {
                 .email("alice@example.com")
                 .plan(UserSubscriptionPlan.FREE)
                 .status(UserStatus.ACTIVE)
+                .locale("en")
                 .build();
 
         when(signupService.signup(any()))
@@ -57,7 +58,7 @@ class SignupControllerTest {
                         domainUser, "alice", new JwtService.IssuedToken("jwt.value", 900), "refresh.value"));
 
         String body = objectMapper.writeValueAsString(
-                new SignupRequest("alice@example.com", "correcthorsebatterystaple", "alice"));
+                new SignupRequest("alice@example.com", "correcthorsebatterystaple", "alice", "en"));
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -69,7 +70,8 @@ class SignupControllerTest {
                 .andExpect(jsonPath("$.user.id").value(id.toString()))
                 .andExpect(jsonPath("$.user.email").value("alice@example.com"))
                 .andExpect(jsonPath("$.user.username").value("alice"))
-                .andExpect(jsonPath("$.user.plan").value("free"));
+                .andExpect(jsonPath("$.user.plan").value("free"))
+                .andExpect(jsonPath("$.user.locale").value("en"));
     }
 
     @Test
@@ -101,7 +103,7 @@ class SignupControllerTest {
         when(signupService.signup(any())).thenThrow(new EmailAlreadyExistsException("alice@example.com"));
 
         String body = objectMapper.writeValueAsString(
-                new SignupRequest("alice@example.com", "correcthorsebatterystaple", "alice"));
+                new SignupRequest("alice@example.com", "correcthorsebatterystaple", "alice", "en"));
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -115,7 +117,7 @@ class SignupControllerTest {
         when(signupService.signup(any())).thenThrow(new UsernameAlreadyExistsException("alice"));
 
         String body = objectMapper.writeValueAsString(
-                new SignupRequest("alice@example.com", "correcthorsebatterystaple", "alice"));
+                new SignupRequest("alice@example.com", "correcthorsebatterystaple", "alice", "en"));
 
         mockMvc.perform(post("/auth/signup")
                         .contentType(MediaType.APPLICATION_JSON)

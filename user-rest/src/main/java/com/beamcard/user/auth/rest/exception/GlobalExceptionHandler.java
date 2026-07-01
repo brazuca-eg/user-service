@@ -61,7 +61,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(InvalidRefreshTokenException.class)
     ProblemDetail handle(InvalidRefreshTokenException e) {
-        return problem(HttpStatus.UNAUTHORIZED, "invalid_refresh_token", "Your session has expired. Please sign in again.");
+        return problem(
+                HttpStatus.UNAUTHORIZED, "invalid_refresh_token", "Your session has expired. Please sign in again.");
     }
 
     @Override

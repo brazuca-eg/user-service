@@ -26,8 +26,8 @@ public class SignupController {
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
     public AuthResponse signup(@Valid @RequestBody SignupRequest request) {
-        SignupResult result =
-                signupService.signup(new SignupCommand(request.email(), request.password(), request.username()));
+        SignupResult result = signupService.signup(
+                new SignupCommand(request.email(), request.password(), request.username(), request.locale()));
 
         return AuthResponse.of(result.user(), result.username(), result.token(), result.refreshToken());
     }

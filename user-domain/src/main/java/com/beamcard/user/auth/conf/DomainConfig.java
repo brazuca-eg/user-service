@@ -53,7 +53,8 @@ public class DomainConfig {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             RefreshTokenService refreshTokenService) {
-        return new SignupServiceImpl(userRepository, usernameRepository, passwordEncoder, jwtService, refreshTokenService);
+        return new SignupServiceImpl(
+                userRepository, usernameRepository, passwordEncoder, jwtService, refreshTokenService);
     }
 
     @Bean
@@ -63,7 +64,8 @@ public class DomainConfig {
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
             RefreshTokenService refreshTokenService) {
-        return new LoginServiceImpl(userRepository, usernameRepository, passwordEncoder, jwtService, refreshTokenService);
+        return new LoginServiceImpl(
+                userRepository, usernameRepository, passwordEncoder, jwtService, refreshTokenService);
     }
 
     @Bean

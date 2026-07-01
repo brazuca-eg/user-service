@@ -31,6 +31,7 @@ public class JwtServiceImpl implements JwtService {
                 .subject(user.getId().toString())
                 .claim("username", username)
                 .claim("plan", user.getPlan().name().toLowerCase())
+                .claim("locale", user.getLocale())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(exp))
                 .signWith(signingKey.keyPair().getPrivate(), Jwts.SIG.RS256)

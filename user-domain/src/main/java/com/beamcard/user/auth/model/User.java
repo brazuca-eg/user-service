@@ -18,6 +18,7 @@ public class User {
     String googleSub;
     UserSubscriptionPlan plan;
     UserStatus status;
+    String locale;
     Instant createdAt;
     Instant updatedAt;
 }

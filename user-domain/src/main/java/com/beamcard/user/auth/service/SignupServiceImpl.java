@@ -37,6 +37,7 @@ public class SignupServiceImpl implements SignupService {
                 .passwordHash(passwordEncoder.encode(command.rawPassword()))
                 .plan(UserSubscriptionPlan.FREE)
                 .status(UserStatus.ACTIVE)
+                .locale(command.locale())
                 .build();
 
         User saved = userRepository.save(toPersist);

@@ -6,7 +6,7 @@ public interface SignupService {
 
     SignupResult signup(SignupCommand command);
 
-    record SignupCommand(String email, String rawPassword, String username) {}
+    record SignupCommand(String email, String rawPassword, String username, String locale) {}
 
     record SignupResult(User user, String username, JwtService.IssuedToken token, String refreshToken) {}
 }

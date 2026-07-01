@@ -50,7 +50,7 @@ class SignupServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        validCommand = new SignupService.SignupCommand("alice@example.com", "correcthorsebatterystaple", "alice");
+        validCommand = new SignupService.SignupCommand("alice@example.com", "correcthorsebatterystaple", "alice", "en");
     }
 
     @Test
@@ -76,6 +76,7 @@ class SignupServiceImplTest {
         assertThat(userCaptor.getValue().getPasswordHash()).isEqualTo("$2a$12$hashed");
         assertThat(userCaptor.getValue().getPlan()).isEqualTo(UserSubscriptionPlan.FREE);
         assertThat(userCaptor.getValue().getStatus()).isEqualTo(UserStatus.ACTIVE);
+        assertThat(userCaptor.getValue().getLocale()).isEqualTo("en");
 
         verify(usernameRepository).save(eq("alice"), eq(newUserId));
 

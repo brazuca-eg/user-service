@@ -48,7 +48,8 @@ class RefreshControllerTest {
                 .status(UserStatus.ACTIVE)
                 .build();
         when(refreshTokenService.refresh("old.refresh"))
-                .thenReturn(new RefreshResult(user, "alice", new JwtService.IssuedToken("new.jwt", 900), "new.refresh"));
+                .thenReturn(
+                        new RefreshResult(user, "alice", new JwtService.IssuedToken("new.jwt", 900), "new.refresh"));
 
         mockMvc.perform(post("/auth/refresh")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -72,7 +73,9 @@ class RefreshControllerTest {
 
     @Test
     void refresh_returns400_whenTokenMissing() throws Exception {
-        mockMvc.perform(post("/auth/refresh").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mockMvc.perform(post("/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
                 .andExpect(status().isBadRequest());
     }
 

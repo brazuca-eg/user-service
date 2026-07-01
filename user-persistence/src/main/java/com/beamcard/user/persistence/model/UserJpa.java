@@ -51,6 +51,9 @@ public class UserJpa {
     @Column(name = "status", nullable = false)
     private UserStatus status;
 
+    @Column(name = "locale", nullable = false)
+    private String locale;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -69,6 +72,9 @@ public class UserJpa {
         }
         if (status == null) {
             status = UserStatus.ACTIVE;
+        }
+        if (locale == null) {
+            locale = "en";
         }
     }
 
