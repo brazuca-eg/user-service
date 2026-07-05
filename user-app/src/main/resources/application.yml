@@ -42,6 +42,8 @@ beamcard:
     password-reset:
       token-ttl: ${PASSWORD_RESET_TOKEN_TTL:PT30M}
       reset-url-template: ${PASSWORD_RESET_URL:http://localhost:5173/reset-password?token=%s}
+    google:
+      client-id: ${GOOGLE_CLIENT_ID:}
 
   email:
     provider: ${EMAIL_PROVIDER:log}

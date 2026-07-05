@@ -9,5 +9,7 @@ public interface UserJpaRepository extends JpaRepository<UserJpa, UUID> {
 
     Optional<UserJpa> findByEmail(String email);
 
+    Optional<UserJpa> findByGoogleSub(String googleSub);
+
     boolean existsByEmail(String email);
 }

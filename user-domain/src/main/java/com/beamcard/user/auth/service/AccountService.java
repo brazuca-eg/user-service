@@ -9,5 +9,9 @@ public interface AccountService {
 
     AccountView getByUsername(String username);
 
+    AccountUpdateResult updateAccount(UUID userId, String newUsername, String newLocale);
+
     record AccountView(User user, String username) {}
+
+    record AccountUpdateResult(User user, String username, JwtService.IssuedToken token, String refreshToken) {}
 }

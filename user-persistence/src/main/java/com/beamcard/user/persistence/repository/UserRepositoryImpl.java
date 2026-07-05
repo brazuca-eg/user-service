@@ -26,6 +26,11 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
+    public Optional<User> findByGoogleSub(String googleSub) {
+        return jpaRepository.findByGoogleSub(googleSub).map(mapper::toDomain);
+    }
+
+    @Override
     public Optional<User> findById(UUID id) {
         return jpaRepository.findById(id).map(mapper::toDomain);
     }
