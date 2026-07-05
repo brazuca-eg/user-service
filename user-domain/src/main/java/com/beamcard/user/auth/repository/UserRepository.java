@@ -10,6 +10,8 @@ public interface UserRepository {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByGoogleSub(String googleSub);
+
     Optional<User> findById(UUID id);
 
     User save(User user);

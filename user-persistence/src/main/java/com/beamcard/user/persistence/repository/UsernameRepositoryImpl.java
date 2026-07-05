@@ -32,4 +32,12 @@ public class UsernameRepositoryImpl implements UsernameRepository {
         jpaRepository.save(
                 UsernameJpa.builder().username(username).userId(userId).build());
     }
+
+    @Override
+    public void changeUsername(UUID userId, String newUsername) {
+        jpaRepository.findByUserId(userId).ifPresent(jpaRepository::delete);
+        jpaRepository.flush();
+        jpaRepository.save(
+                UsernameJpa.builder().username(newUsername).userId(userId).build());
+    }
 }

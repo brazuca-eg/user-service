@@ -3,8 +3,10 @@ package com.beamcard.user.auth.rest.exception;
 import com.beamcard.user.auth.exception.AccountNotActiveException;
 import com.beamcard.user.auth.exception.EmailAlreadyExistsException;
 import com.beamcard.user.auth.exception.InvalidCredentialsException;
+import com.beamcard.user.auth.exception.InvalidGoogleTokenException;
 import com.beamcard.user.auth.exception.InvalidRefreshTokenException;
 import com.beamcard.user.auth.exception.InvalidResetTokenException;
+import com.beamcard.user.auth.exception.OAuthEmailConflictException;
 import com.beamcard.user.auth.exception.UserNotFoundException;
 import com.beamcard.user.auth.exception.UsernameAlreadyExistsException;
 import jakarta.validation.ConstraintViolation;
@@ -42,6 +44,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidCredentialsException.class)
     ProblemDetail handle(InvalidCredentialsException e) {
         return problem(HttpStatus.UNAUTHORIZED, "invalid_credentials", "Invalid email or password.");
+    }
+
+    @ExceptionHandler(InvalidGoogleTokenException.class)
+    ProblemDetail handle(InvalidGoogleTokenException e) {
+        return problem(HttpStatus.UNAUTHORIZED, "invalid_google_token", "Google sign-in could not be verified.");
+    }
+
+    @ExceptionHandler(OAuthEmailConflictException.class)
+    ProblemDetail handle(OAuthEmailConflictException e) {
+        return problem(
+                HttpStatus.CONFLICT,
+                "email_password_account",
+                "That email is already registered. Log in with your password, then link Google in settings.");
     }
 
     @ExceptionHandler(AccountNotActiveException.class)

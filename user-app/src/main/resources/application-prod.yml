@@ -17,6 +17,8 @@ beamcard:
       generate-if-missing: false
     password-reset:
       reset-url-template: ${PASSWORD_RESET_URL}
+    google:
+      client-id: ${GOOGLE_CLIENT_ID}
   email:
     provider: ${EMAIL_PROVIDER:resend}
     from: ${EMAIL_FROM}

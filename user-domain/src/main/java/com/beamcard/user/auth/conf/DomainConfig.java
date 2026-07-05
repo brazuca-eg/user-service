@@ -8,6 +8,9 @@ import com.beamcard.user.auth.repository.UsernameRepository;
 import com.beamcard.user.auth.service.AccountService;
 import com.beamcard.user.auth.service.AccountServiceImpl;
 import com.beamcard.user.auth.service.EmailSender;
+import com.beamcard.user.auth.service.GoogleAuthService;
+import com.beamcard.user.auth.service.GoogleAuthServiceImpl;
+import com.beamcard.user.auth.service.GoogleIdentityVerifier;
 import com.beamcard.user.auth.service.JwtService;
 import com.beamcard.user.auth.service.JwtServiceImpl;
 import com.beamcard.user.auth.service.LoginService;
@@ -58,6 +61,17 @@ public class DomainConfig {
     }
 
     @Bean
+    public GoogleAuthService googleAuthService(
+            UserRepository userRepository,
+            UsernameRepository usernameRepository,
+            GoogleIdentityVerifier googleIdentityVerifier,
+            JwtService jwtService,
+            RefreshTokenService refreshTokenService) {
+        return new GoogleAuthServiceImpl(
+                userRepository, usernameRepository, googleIdentityVerifier, jwtService, refreshTokenService);
+    }
+
+    @Bean
     public LoginService loginService(
             UserRepository userRepository,
             UsernameRepository usernameRepository,
@@ -69,8 +83,12 @@ public class DomainConfig {
     }
 
     @Bean
-    public AccountService accountService(UserRepository userRepository, UsernameRepository usernameRepository) {
-        return new AccountServiceImpl(userRepository, usernameRepository);
+    public AccountService accountService(
+            UserRepository userRepository,
+            UsernameRepository usernameRepository,
+            JwtService jwtService,
+            RefreshTokenService refreshTokenService) {
+        return new AccountServiceImpl(userRepository, usernameRepository, jwtService, refreshTokenService);
     }
 
     @Bean

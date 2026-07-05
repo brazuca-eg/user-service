@@ -12,4 +12,6 @@ public interface UsernameRepository {
     Optional<UUID> findUserIdByUsername(String username);
 
     void save(String username, UUID userId);
+
+    void changeUsername(UUID userId, String newUsername);
 }
