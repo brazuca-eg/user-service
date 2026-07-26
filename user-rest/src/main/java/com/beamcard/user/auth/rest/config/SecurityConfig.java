@@ -37,6 +37,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/auth/password/forgot", "/auth/password/reset")
                         .permitAll()
+                        .requestMatchers("/auth/email/verify/confirm", "/auth/email/verify/resend")
+                        .permitAll()
                         .requestMatchers("/auth/username/*/available")
                         .permitAll()
                         .requestMatchers("/actuator/**")

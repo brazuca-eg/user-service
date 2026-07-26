@@ -21,6 +21,8 @@ public class SignupServiceImpl implements SignupService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final EmailVerificationService emailVerificationService;
+    private final boolean requireEmailVerification;
 
     @Override
     @Transactional
@@ -43,10 +45,21 @@ public class SignupServiceImpl implements SignupService {
         User saved = userRepository.save(toPersist);
         usernameRepository.save(command.username(), saved.getId());
 
+        try {
+            emailVerificationService.sendVerification(saved);
+        } catch (RuntimeException e) {
+            log.warn("Could not send verification email for new user {}: {}", saved.getId(), e.getMessage());
+        }
+
+        if (requireEmailVerification) {
+            log.info("Signup succeeded for user {} ({}); awaiting email verification", saved.getId(), command.email());
+            return new SignupResult(saved, command.username(), true, null, null);
+        }
+
         JwtService.IssuedToken token = jwtService.issueAccessToken(saved, command.username());
         String refreshToken = refreshTokenService.issueRefreshToken(saved.getId());
         log.info("Signup succeeded for user {} ({})", saved.getId(), command.email());
 
-        return new SignupResult(saved, command.username(), token, refreshToken);
+        return new SignupResult(saved, command.username(), false, token, refreshToken);
     }
 }

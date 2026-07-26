@@ -11,8 +11,6 @@ import static org.mockito.Mockito.when;
 import com.beamcard.user.auth.exception.EmailAlreadyExistsException;
 import com.beamcard.user.auth.exception.UsernameAlreadyExistsException;
 import com.beamcard.user.auth.model.User;
-import com.beamcard.user.auth.model.UserStatus;
-import com.beamcard.user.auth.model.UserSubscriptionPlan;
 import com.beamcard.user.auth.repository.UserRepository;
 import com.beamcard.user.auth.repository.UsernameRepository;
 import java.util.UUID;
@@ -20,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,8 +40,8 @@ class SignupServiceImplTest {
     @Mock
     RefreshTokenService refreshTokenService;
 
-    @InjectMocks
-    SignupServiceImpl signupService;
+    @Mock
+    EmailVerificationService emailVerificationService;
 
     SignupService.SignupCommand validCommand;
 
@@ -53,46 +50,65 @@ class SignupServiceImplTest {
         validCommand = new SignupService.SignupCommand("alice@example.com", "correcthorsebatterystaple", "alice", "en");
     }
 
-    @Test
-    void happyPath_persistsUserAndUsername_andReturnsToken() {
-        UUID newUserId = UUID.randomUUID();
+    private SignupServiceImpl service(boolean requireEmailVerification) {
+        return new SignupServiceImpl(
+                userRepository,
+                usernameRepository,
+                passwordEncoder,
+                jwtService,
+                refreshTokenService,
+                emailVerificationService,
+                requireEmailVerification);
+    }
 
+    @Test
+    void happyPath_verificationRequired_persistsUser_sendsEmail_andIssuesNoSession() {
+        UUID newUserId = UUID.randomUUID();
         when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
         when(usernameRepository.existsByUsername("alice")).thenReturn(false);
         when(passwordEncoder.encode("correcthorsebatterystaple")).thenReturn("$2a$12$hashed");
-        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
-            User u = inv.getArgument(0);
-            return u.withId(newUserId);
-        });
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> ((User) inv.getArgument(0)).withId(newUserId));
+
+        SignupService.SignupResult result = service(true).signup(validCommand);
+
+        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(userCaptor.capture());
+        assertThat(userCaptor.getValue().getPasswordHash()).isEqualTo("$2a$12$hashed");
+        verify(usernameRepository).save(eq("alice"), eq(newUserId));
+        verify(emailVerificationService).sendVerification(any(User.class));
+
+        // No session until verified.
+        assertThat(result.verificationRequired()).isTrue();
+        assertThat(result.token()).isNull();
+        assertThat(result.refreshToken()).isNull();
+        verify(jwtService, never()).issueAccessToken(any(), any());
+        verify(refreshTokenService, never()).issueRefreshToken(any());
+    }
+
+    @Test
+    void whenVerificationDisabled_autoLogsInWithTokens() {
+        UUID newUserId = UUID.randomUUID();
+        when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
+        when(usernameRepository.existsByUsername("alice")).thenReturn(false);
+        when(passwordEncoder.encode("correcthorsebatterystaple")).thenReturn("$2a$12$hashed");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> ((User) inv.getArgument(0)).withId(newUserId));
         when(jwtService.issueAccessToken(any(User.class), any()))
                 .thenReturn(new JwtService.IssuedToken("dummy.jwt.token", 900));
         when(refreshTokenService.issueRefreshToken(newUserId)).thenReturn("refresh.value");
 
-        SignupService.SignupResult result = signupService.signup(validCommand);
+        SignupService.SignupResult result = service(false).signup(validCommand);
 
-        ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
-        verify(userRepository).save(userCaptor.capture());
-        assertThat(userCaptor.getValue().getEmail()).isEqualTo("alice@example.com");
-        assertThat(userCaptor.getValue().getPasswordHash()).isEqualTo("$2a$12$hashed");
-        assertThat(userCaptor.getValue().getPlan()).isEqualTo(UserSubscriptionPlan.FREE);
-        assertThat(userCaptor.getValue().getStatus()).isEqualTo(UserStatus.ACTIVE);
-        assertThat(userCaptor.getValue().getLocale()).isEqualTo("en");
-
-        verify(usernameRepository).save(eq("alice"), eq(newUserId));
-
+        assertThat(result.verificationRequired()).isFalse();
         assertThat(result.token().value()).isEqualTo("dummy.jwt.token");
-        assertThat(result.token().expiresInSeconds()).isEqualTo(900);
-        assertThat(result.user().getId()).isEqualTo(newUserId);
-        assertThat(result.user().getEmail()).isEqualTo("alice@example.com");
-        assertThat(result.username()).isEqualTo("alice");
         assertThat(result.refreshToken()).isEqualTo("refresh.value");
+        verify(emailVerificationService).sendVerification(any(User.class));
     }
 
     @Test
     void rejectsDuplicateEmail_andDoesNotTouchUsernameTable() {
         when(userRepository.existsByEmail("alice@example.com")).thenReturn(true);
 
-        assertThatThrownBy(() -> signupService.signup(validCommand))
+        assertThatThrownBy(() -> service(true).signup(validCommand))
                 .isInstanceOf(EmailAlreadyExistsException.class)
                 .hasMessageContaining("alice@example.com");
 
@@ -106,7 +122,7 @@ class SignupServiceImplTest {
         when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
         when(usernameRepository.existsByUsername("alice")).thenReturn(true);
 
-        assertThatThrownBy(() -> signupService.signup(validCommand))
+        assertThatThrownBy(() -> service(true).signup(validCommand))
                 .isInstanceOf(UsernameAlreadyExistsException.class)
                 .hasMessageContaining("alice");
 

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.beamcard.user.auth.exception.AccountNotActiveException;
+import com.beamcard.user.auth.exception.EmailNotVerifiedException;
 import com.beamcard.user.auth.exception.InvalidCredentialsException;
 import com.beamcard.user.auth.model.User;
 import com.beamcard.user.auth.model.UserStatus;
@@ -19,7 +20,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -42,7 +42,6 @@ class LoginServiceImplTest {
     @Mock
     RefreshTokenService refreshTokenService;
 
-    @InjectMocks
     LoginServiceImpl loginService;
 
     private UUID userId;
@@ -51,6 +50,9 @@ class LoginServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        // Email verification required (prod default).
+        loginService = new LoginServiceImpl(
+                userRepository, usernameRepository, passwordEncoder, jwtService, refreshTokenService, true);
         userId = UUID.randomUUID();
         activeUser = User.builder()
                 .id(userId)
@@ -58,6 +60,7 @@ class LoginServiceImplTest {
                 .passwordHash("$2a$12$hashed")
                 .plan(UserSubscriptionPlan.FREE)
                 .status(UserStatus.ACTIVE)
+                .emailVerified(true)
                 .build();
         command = new LoginService.LoginCommand("alice@example.com", "correcthorsebatterystaple");
     }
@@ -109,5 +112,34 @@ class LoginServiceImplTest {
         assertThatThrownBy(() -> loginService.login(command)).isInstanceOf(AccountNotActiveException.class);
 
         verify(jwtService, never()).issueAccessToken(any(), any());
+    }
+
+    @Test
+    void unverifiedEmail_throwsEmailNotVerified_whenRequired() {
+        User unverified = activeUser.withEmailVerified(false);
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(unverified));
+        when(passwordEncoder.matches("correcthorsebatterystaple", "$2a$12$hashed"))
+                .thenReturn(true);
+
+        assertThatThrownBy(() -> loginService.login(command)).isInstanceOf(EmailNotVerifiedException.class);
+
+        verify(jwtService, never()).issueAccessToken(any(), any());
+    }
+
+    @Test
+    void unverifiedEmail_isAllowed_whenVerificationDisabled() {
+        LoginServiceImpl noVerify = new LoginServiceImpl(
+                userRepository, usernameRepository, passwordEncoder, jwtService, refreshTokenService, false);
+        User unverified = activeUser.withEmailVerified(false);
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(unverified));
+        when(passwordEncoder.matches("correcthorsebatterystaple", "$2a$12$hashed"))
+                .thenReturn(true);
+        when(usernameRepository.findUsernameByUserId(userId)).thenReturn(Optional.of("alice"));
+        when(jwtService.issueAccessToken(unverified, "alice")).thenReturn(new JwtService.IssuedToken("jwt.value", 900));
+        when(refreshTokenService.issueRefreshToken(userId)).thenReturn("refresh.value");
+
+        LoginService.LoginResult result = noVerify.login(command);
+
+        assertThat(result.token().value()).isEqualTo("jwt.value");
     }
 }

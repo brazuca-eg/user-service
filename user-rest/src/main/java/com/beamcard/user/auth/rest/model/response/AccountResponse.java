@@ -6,7 +6,14 @@ import java.util.UUID;
 import org.springframework.util.StringUtils;
 
 public record AccountResponse(
-        UUID id, String email, String username, String plan, String locale, Instant createdAt, boolean hasPassword) {
+        UUID id,
+        String email,
+        String username,
+        String plan,
+        String locale,
+        Instant createdAt,
+        boolean hasPassword,
+        boolean emailVerified) {
 
     public static AccountResponse of(User user, String username) {
         return new AccountResponse(
@@ -16,6 +23,7 @@ public record AccountResponse(
                 user.getPlan().name().toLowerCase(),
                 user.getLocale(),
                 user.getCreatedAt(),
-                StringUtils.hasText(user.getPasswordHash())); // false for Google-only accounts
+                StringUtils.hasText(user.getPasswordHash()), // false for Google-only accounts
+                user.isEmailVerified());
     }
 }
