@@ -9,10 +9,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.beamcard.user.auth.exception.IncorrectPasswordException;
+import com.beamcard.user.auth.exception.PasswordNotSetException;
 import com.beamcard.user.auth.exception.UsernameAlreadyExistsException;
 import com.beamcard.user.auth.model.User;
 import com.beamcard.user.auth.model.UserStatus;
 import com.beamcard.user.auth.model.UserSubscriptionPlan;
+import com.beamcard.user.auth.repository.RefreshTokenRepository;
 import com.beamcard.user.auth.repository.UserRepository;
 import com.beamcard.user.auth.repository.UsernameRepository;
 import com.beamcard.user.auth.service.AccountService.AccountUpdateResult;
@@ -26,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class AccountServiceImplTest {
@@ -42,6 +46,12 @@ class AccountServiceImplTest {
     @Mock
     RefreshTokenService refreshTokenService;
 
+    @Mock
+    RefreshTokenRepository refreshTokenRepository;
+
+    @Mock
+    PasswordEncoder passwordEncoder;
+
     @InjectMocks
     AccountServiceImpl service;
 
@@ -57,6 +67,7 @@ class AccountServiceImplTest {
         return User.builder()
                 .id(userId)
                 .email("alice@example.com")
+                .passwordHash("$2a$hash")
                 .plan(UserSubscriptionPlan.FREE)
                 .status(UserStatus.ACTIVE)
                 .locale(locale)
@@ -127,5 +138,63 @@ class AccountServiceImplTest {
 
         verify(usernameRepository, never()).existsByUsername(eq("alice"));
         verify(usernameRepository, never()).changeUsername(any(), any());
+    }
+
+    @Test
+    void changePassword_updatesHash_revokesSessions_andReissuesTokens() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user("en")));
+        when(usernameRepository.findUsernameByUserId(userId)).thenReturn(Optional.of("alice"));
+        when(passwordEncoder.matches("current-pass", "$2a$hash")).thenReturn(true);
+        when(passwordEncoder.encode("new-password-123")).thenReturn("$2a$newhash");
+        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        AccountUpdateResult result = service.changePassword(userId, "current-pass", "new-password-123");
+
+        ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(saved.capture());
+        assertThat(saved.getValue().getPasswordHash()).isEqualTo("$2a$newhash");
+        verify(refreshTokenRepository).revokeAllForUser(userId);
+        assertThat(result.refreshToken()).isEqualTo("refresh");
+    }
+
+    @Test
+    void changePassword_rejects_whenCurrentPasswordWrong() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user("en")));
+        when(passwordEncoder.matches("wrong", "$2a$hash")).thenReturn(false);
+
+        assertThatThrownBy(() -> service.changePassword(userId, "wrong", "new-password-123"))
+                .isInstanceOf(IncorrectPasswordException.class);
+        verify(userRepository, never()).save(any());
+        verify(refreshTokenRepository, never()).revokeAllForUser(any());
+    }
+
+    @Test
+    void changePassword_rejects_whenAccountHasNoPassword() {
+        User googleOnly = User.builder()
+                .id(userId)
+                .email("g@example.com")
+                .plan(UserSubscriptionPlan.FREE)
+                .status(UserStatus.ACTIVE)
+                .locale("en")
+                .build(); // no passwordHash
+        when(userRepository.findById(userId)).thenReturn(Optional.of(googleOnly));
+
+        assertThatThrownBy(() -> service.changePassword(userId, "x", "new-password-123"))
+                .isInstanceOf(PasswordNotSetException.class);
+        verify(userRepository, never()).save(any());
+    }
+
+    @Test
+    void deleteAccount_softDeletes_revokesTokens_andReleasesUsername() {
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user("en")));
+        when(userRepository.save(any())).thenAnswer(inv -> inv.getArgument(0));
+
+        service.deleteAccount(userId);
+
+        ArgumentCaptor<User> saved = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(saved.capture());
+        assertThat(saved.getValue().getStatus()).isEqualTo(UserStatus.DELETED);
+        verify(refreshTokenRepository).revokeAllForUser(userId);
+        verify(usernameRepository).deleteByUserId(userId);
     }
 }

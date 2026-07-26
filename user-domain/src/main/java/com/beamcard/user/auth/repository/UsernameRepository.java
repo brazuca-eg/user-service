@@ -14,4 +14,6 @@ public interface UsernameRepository {
     void save(String username, UUID userId);
 
     void changeUsername(UUID userId, String newUsername);
+
+    void deleteByUserId(UUID userId);
 }

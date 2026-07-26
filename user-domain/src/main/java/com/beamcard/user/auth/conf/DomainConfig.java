@@ -87,8 +87,16 @@ public class DomainConfig {
             UserRepository userRepository,
             UsernameRepository usernameRepository,
             JwtService jwtService,
-            RefreshTokenService refreshTokenService) {
-        return new AccountServiceImpl(userRepository, usernameRepository, jwtService, refreshTokenService);
+            RefreshTokenService refreshTokenService,
+            RefreshTokenRepository refreshTokenRepository,
+            PasswordEncoder passwordEncoder) {
+        return new AccountServiceImpl(
+                userRepository,
+                usernameRepository,
+                jwtService,
+                refreshTokenService,
+                refreshTokenRepository,
+                passwordEncoder);
     }
 
     @Bean

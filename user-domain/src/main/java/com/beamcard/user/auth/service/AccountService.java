@@ -11,6 +11,10 @@ public interface AccountService {
 
     AccountUpdateResult updateAccount(UUID userId, String newUsername, String newLocale);
 
+    AccountUpdateResult changePassword(UUID userId, String currentPassword, String newPassword);
+
+    void deleteAccount(UUID userId);
+
     record AccountView(User user, String username) {}
 
     record AccountUpdateResult(User user, String username, JwtService.IssuedToken token, String refreshToken) {}

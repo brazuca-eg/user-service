@@ -2,11 +2,13 @@ package com.beamcard.user.auth.rest.exception;
 
 import com.beamcard.user.auth.exception.AccountNotActiveException;
 import com.beamcard.user.auth.exception.EmailAlreadyExistsException;
+import com.beamcard.user.auth.exception.IncorrectPasswordException;
 import com.beamcard.user.auth.exception.InvalidCredentialsException;
 import com.beamcard.user.auth.exception.InvalidGoogleTokenException;
 import com.beamcard.user.auth.exception.InvalidRefreshTokenException;
 import com.beamcard.user.auth.exception.InvalidResetTokenException;
 import com.beamcard.user.auth.exception.OAuthEmailConflictException;
+import com.beamcard.user.auth.exception.PasswordNotSetException;
 import com.beamcard.user.auth.exception.UserNotFoundException;
 import com.beamcard.user.auth.exception.UsernameAlreadyExistsException;
 import jakarta.validation.ConstraintViolation;
@@ -72,6 +74,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(InvalidResetTokenException.class)
     ProblemDetail handle(InvalidResetTokenException e) {
         return problem(HttpStatus.BAD_REQUEST, "invalid_reset_token", "This reset link is invalid or has expired.");
+    }
+
+    @ExceptionHandler(IncorrectPasswordException.class)
+    ProblemDetail handle(IncorrectPasswordException e) {
+        return problem(HttpStatus.BAD_REQUEST, "incorrect_password", "Your current password is incorrect.");
+    }
+
+    @ExceptionHandler(PasswordNotSetException.class)
+    ProblemDetail handle(PasswordNotSetException e) {
+        return problem(
+                HttpStatus.BAD_REQUEST,
+                "password_not_set",
+                "This account signs in with Google and has no password to change.");
     }
 
     @ExceptionHandler(InvalidRefreshTokenException.class)

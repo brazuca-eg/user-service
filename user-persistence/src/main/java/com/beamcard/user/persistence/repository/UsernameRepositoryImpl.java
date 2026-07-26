@@ -40,4 +40,9 @@ public class UsernameRepositoryImpl implements UsernameRepository {
         jpaRepository.save(
                 UsernameJpa.builder().username(newUsername).userId(userId).build());
     }
+
+    @Override
+    public void deleteByUserId(UUID userId) {
+        jpaRepository.findByUserId(userId).ifPresent(jpaRepository::delete);
+    }
 }
