@@ -8,5 +8,10 @@ public interface SignupService {
 
     record SignupCommand(String email, String rawPassword, String username, String locale) {}
 
-    record SignupResult(User user, String username, JwtService.IssuedToken token, String refreshToken) {}
+    record SignupResult(
+            User user,
+            String username,
+            boolean verificationRequired,
+            JwtService.IssuedToken token,
+            String refreshToken) {}
 }

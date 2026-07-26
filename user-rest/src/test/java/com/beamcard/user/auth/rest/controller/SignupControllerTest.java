@@ -55,7 +55,7 @@ class SignupControllerTest {
 
         when(signupService.signup(any()))
                 .thenReturn(new SignupService.SignupResult(
-                        domainUser, "alice", new JwtService.IssuedToken("jwt.value", 900), "refresh.value"));
+                        domainUser, "alice", false, new JwtService.IssuedToken("jwt.value", 900), "refresh.value"));
 
         String body = objectMapper.writeValueAsString(
                 new SignupRequest("alice@example.com", "correcthorsebatterystaple", "alice", "en"));
@@ -64,14 +64,38 @@ class SignupControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.access_token").value("jwt.value"))
-                .andExpect(jsonPath("$.token_type").value("Bearer"))
-                .andExpect(jsonPath("$.expires_in").value(900))
-                .andExpect(jsonPath("$.user.id").value(id.toString()))
-                .andExpect(jsonPath("$.user.email").value("alice@example.com"))
-                .andExpect(jsonPath("$.user.username").value("alice"))
-                .andExpect(jsonPath("$.user.plan").value("free"))
-                .andExpect(jsonPath("$.user.locale").value("en"));
+                .andExpect(jsonPath("$.verification_required").value(false))
+                .andExpect(jsonPath("$.auth.access_token").value("jwt.value"))
+                .andExpect(jsonPath("$.auth.token_type").value("Bearer"))
+                .andExpect(jsonPath("$.auth.expires_in").value(900))
+                .andExpect(jsonPath("$.auth.user.id").value(id.toString()))
+                .andExpect(jsonPath("$.auth.user.username").value("alice"))
+                .andExpect(jsonPath("$.auth.user.plan").value("free"))
+                .andExpect(jsonPath("$.auth.user.locale").value("en"));
+    }
+
+    @Test
+    void signup_returns201_pending_whenVerificationRequired() throws Exception {
+        User domainUser = User.builder()
+                .id(UUID.randomUUID())
+                .email("alice@example.com")
+                .plan(UserSubscriptionPlan.FREE)
+                .status(UserStatus.ACTIVE)
+                .locale("en")
+                .build();
+        when(signupService.signup(any()))
+                .thenReturn(new SignupService.SignupResult(domainUser, "alice", true, null, null));
+
+        String body = objectMapper.writeValueAsString(
+                new SignupRequest("alice@example.com", "correcthorsebatterystaple", "alice", "en"));
+
+        mockMvc.perform(post("/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.verification_required").value(true))
+                .andExpect(jsonPath("$.email").value("alice@example.com"))
+                .andExpect(jsonPath("$.auth").doesNotExist());
     }
 
     @Test

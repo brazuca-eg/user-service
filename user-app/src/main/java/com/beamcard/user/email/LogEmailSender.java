@@ -13,4 +13,9 @@ public class LogEmailSender implements EmailSender {
     public void sendPasswordReset(String toEmail, String resetUrl) {
         log.info("[email:log] Password reset for {}\n  reset link: {}", toEmail, resetUrl);
     }
+
+    @Override
+    public void sendEmailVerification(String toEmail, String verifyUrl) {
+        log.info("[email:log] Verify email for {}\n  verify link: {}", toEmail, verifyUrl);
+    }
 }

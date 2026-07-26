@@ -1,6 +1,7 @@
 package com.beamcard.user.auth.service;
 
 import com.beamcard.user.auth.exception.AccountNotActiveException;
+import com.beamcard.user.auth.exception.EmailNotVerifiedException;
 import com.beamcard.user.auth.exception.InvalidCredentialsException;
 import com.beamcard.user.auth.model.User;
 import com.beamcard.user.auth.model.UserStatus;
@@ -19,6 +20,7 @@ public class LoginServiceImpl implements LoginService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final boolean requireEmailVerification;
 
     @Override
     public LoginResult login(LoginCommand command) {
@@ -29,6 +31,9 @@ public class LoginServiceImpl implements LoginService {
         }
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new AccountNotActiveException();
+        }
+        if (requireEmailVerification && !user.isEmailVerified()) {
+            throw new EmailNotVerifiedException();
         }
 
         String username = usernameRepository

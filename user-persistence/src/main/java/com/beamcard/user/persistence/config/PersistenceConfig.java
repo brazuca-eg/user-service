@@ -1,16 +1,20 @@
 package com.beamcard.user.persistence.config;
 
+import com.beamcard.user.auth.repository.EmailVerificationTokenRepository;
 import com.beamcard.user.auth.repository.PasswordResetTokenRepository;
 import com.beamcard.user.auth.repository.RefreshTokenRepository;
 import com.beamcard.user.auth.repository.UserRepository;
 import com.beamcard.user.auth.repository.UsernameRepository;
+import com.beamcard.user.persistence.mapper.EmailVerificationTokenPersistenceMapper;
 import com.beamcard.user.persistence.mapper.PasswordResetTokenPersistenceMapper;
 import com.beamcard.user.persistence.mapper.RefreshTokenPersistenceMapper;
 import com.beamcard.user.persistence.mapper.UserPersistenceMapper;
+import com.beamcard.user.persistence.repository.EmailVerificationTokenRepositoryImpl;
 import com.beamcard.user.persistence.repository.PasswordResetTokenRepositoryImpl;
 import com.beamcard.user.persistence.repository.RefreshTokenRepositoryImpl;
 import com.beamcard.user.persistence.repository.UserRepositoryImpl;
 import com.beamcard.user.persistence.repository.UsernameRepositoryImpl;
+import com.beamcard.user.persistence.repository.jpa.EmailVerificationTokenJpaRepository;
 import com.beamcard.user.persistence.repository.jpa.PasswordResetTokenJpaRepository;
 import com.beamcard.user.persistence.repository.jpa.RefreshTokenJpaRepository;
 import com.beamcard.user.persistence.repository.jpa.UserJpaRepository;
@@ -49,6 +53,17 @@ public class PersistenceConfig {
     public PasswordResetTokenRepository passwordResetTokenRepository(
             PasswordResetTokenJpaRepository jpaRepository, PasswordResetTokenPersistenceMapper mapper) {
         return new PasswordResetTokenRepositoryImpl(jpaRepository, mapper);
+    }
+
+    @Bean
+    public EmailVerificationTokenPersistenceMapper emailVerificationTokenPersistenceMapper() {
+        return Mappers.getMapper(EmailVerificationTokenPersistenceMapper.class);
+    }
+
+    @Bean
+    public EmailVerificationTokenRepository emailVerificationTokenRepository(
+            EmailVerificationTokenJpaRepository jpaRepository, EmailVerificationTokenPersistenceMapper mapper) {
+        return new EmailVerificationTokenRepositoryImpl(jpaRepository, mapper);
     }
 
     @Bean
