@@ -1,6 +1,7 @@
 package com.beamcard.user.auth.conf;
 
 import com.beamcard.user.auth.model.SigningKey;
+import com.beamcard.user.auth.repository.EmailVerificationTokenRepository;
 import com.beamcard.user.auth.repository.PasswordResetTokenRepository;
 import com.beamcard.user.auth.repository.RefreshTokenRepository;
 import com.beamcard.user.auth.repository.UserRepository;
@@ -8,6 +9,8 @@ import com.beamcard.user.auth.repository.UsernameRepository;
 import com.beamcard.user.auth.service.AccountService;
 import com.beamcard.user.auth.service.AccountServiceImpl;
 import com.beamcard.user.auth.service.EmailSender;
+import com.beamcard.user.auth.service.EmailVerificationService;
+import com.beamcard.user.auth.service.EmailVerificationServiceImpl;
 import com.beamcard.user.auth.service.GoogleAuthService;
 import com.beamcard.user.auth.service.GoogleAuthServiceImpl;
 import com.beamcard.user.auth.service.GoogleIdentityVerifier;
@@ -50,14 +53,33 @@ public class DomainConfig {
     }
 
     @Bean
+    public EmailVerificationService emailVerificationService(
+            UserRepository userRepository,
+            EmailVerificationTokenRepository emailVerificationTokenRepository,
+            EmailSender emailSender,
+            @Value("${beamcard.auth.email-verification.token-ttl}") Duration tokenTtl,
+            @Value("${beamcard.auth.email-verification.verify-url-template}") String verifyUrlTemplate) {
+        return new EmailVerificationServiceImpl(
+                userRepository, emailVerificationTokenRepository, emailSender, tokenTtl, verifyUrlTemplate);
+    }
+
+    @Bean
     public SignupService signupService(
             UserRepository userRepository,
             UsernameRepository usernameRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            RefreshTokenService refreshTokenService) {
+            RefreshTokenService refreshTokenService,
+            EmailVerificationService emailVerificationService,
+            @Value("${beamcard.auth.require-email-verification:true}") boolean requireEmailVerification) {
         return new SignupServiceImpl(
-                userRepository, usernameRepository, passwordEncoder, jwtService, refreshTokenService);
+                userRepository,
+                usernameRepository,
+                passwordEncoder,
+                jwtService,
+                refreshTokenService,
+                emailVerificationService,
+                requireEmailVerification);
     }
 
     @Bean
@@ -77,9 +99,15 @@ public class DomainConfig {
             UsernameRepository usernameRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService,
-            RefreshTokenService refreshTokenService) {
+            RefreshTokenService refreshTokenService,
+            @Value("${beamcard.auth.require-email-verification:true}") boolean requireEmailVerification) {
         return new LoginServiceImpl(
-                userRepository, usernameRepository, passwordEncoder, jwtService, refreshTokenService);
+                userRepository,
+                usernameRepository,
+                passwordEncoder,
+                jwtService,
+                refreshTokenService,
+                requireEmailVerification);
     }
 
     @Bean
@@ -87,8 +115,16 @@ public class DomainConfig {
             UserRepository userRepository,
             UsernameRepository usernameRepository,
             JwtService jwtService,
-            RefreshTokenService refreshTokenService) {
-        return new AccountServiceImpl(userRepository, usernameRepository, jwtService, refreshTokenService);
+            RefreshTokenService refreshTokenService,
+            RefreshTokenRepository refreshTokenRepository,
+            PasswordEncoder passwordEncoder) {
+        return new AccountServiceImpl(
+                userRepository,
+                usernameRepository,
+                jwtService,
+                refreshTokenService,
+                refreshTokenRepository,
+                passwordEncoder);
     }
 
     @Bean

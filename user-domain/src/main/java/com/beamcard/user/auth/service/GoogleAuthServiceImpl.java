@@ -53,6 +53,7 @@ public class GoogleAuthServiceImpl implements GoogleAuthService {
                 .plan(UserSubscriptionPlan.FREE)
                 .status(UserStatus.ACTIVE)
                 .locale(normalizeLocale(fallbackLocale))
+                .emailVerified(true) // Google already verified this email
                 .build());
         String username = reservePlaceholderUsername(saved.getId());
         log.debug("Created Google user {} with placeholder handle {}", saved.getId(), username);

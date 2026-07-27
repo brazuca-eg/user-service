@@ -11,15 +11,15 @@ import lombok.With;
 @Builder
 @AllArgsConstructor
 @With
-public class User {
+public class EmailVerificationToken {
     UUID id;
-    String email;
-    String passwordHash;
-    String googleSub;
-    UserSubscriptionPlan plan;
-    UserStatus status;
-    String locale;
-    boolean emailVerified;
+    UUID userId;
+    String tokenHash;
+    Instant expiresAt;
+    Instant usedAt;
     Instant createdAt;
-    Instant updatedAt;
+
+    public boolean isUsable(Instant now) {
+        return usedAt == null && expiresAt.isAfter(now);
+    }
 }

@@ -1,5 +1,6 @@
 package com.beamcard.user.auth.rest.controller;
 
+import com.beamcard.user.auth.rest.model.request.ChangePasswordRequest;
 import com.beamcard.user.auth.rest.model.request.UpdateAccountRequest;
 import com.beamcard.user.auth.rest.model.response.AccountResponse;
 import com.beamcard.user.auth.rest.model.response.AuthResponse;
@@ -10,11 +11,15 @@ import com.beamcard.user.auth.service.JwtService.AuthenticatedUser;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -36,5 +41,20 @@ public class AccountController {
             @Valid @NotNull @RequestBody UpdateAccountRequest request) {
         AccountUpdateResult result = accountService.updateAccount(principal.id(), request.username(), request.locale());
         return AuthResponse.of(result.user(), result.username(), result.token(), result.refreshToken());
+    }
+
+    @PostMapping("/me/password")
+    public AuthResponse changePassword(
+            @AuthenticationPrincipal AuthenticatedUser principal,
+            @Valid @NotNull @RequestBody ChangePasswordRequest request) {
+        AccountUpdateResult result =
+                accountService.changePassword(principal.id(), request.currentPassword(), request.newPassword());
+        return AuthResponse.of(result.user(), result.username(), result.token(), result.refreshToken());
+    }
+
+    @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAccount(@AuthenticationPrincipal AuthenticatedUser principal) {
+        accountService.deleteAccount(principal.id());
     }
 }

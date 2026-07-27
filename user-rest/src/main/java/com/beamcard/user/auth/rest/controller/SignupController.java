@@ -2,6 +2,7 @@ package com.beamcard.user.auth.rest.controller;
 
 import com.beamcard.user.auth.rest.model.request.SignupRequest;
 import com.beamcard.user.auth.rest.model.response.AuthResponse;
+import com.beamcard.user.auth.rest.model.response.SignupResponse;
 import com.beamcard.user.auth.service.SignupService;
 import com.beamcard.user.auth.service.SignupService.SignupCommand;
 import com.beamcard.user.auth.service.SignupService.SignupResult;
@@ -25,10 +26,14 @@ public class SignupController {
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
-    public AuthResponse signup(@Valid @RequestBody SignupRequest request) {
+    public SignupResponse signup(@Valid @RequestBody SignupRequest request) {
         SignupResult result = signupService.signup(
                 new SignupCommand(request.email(), request.password(), request.username(), request.locale()));
 
-        return AuthResponse.of(result.user(), result.username(), result.token(), result.refreshToken());
+        if (result.verificationRequired()) {
+            return SignupResponse.pending(result.user().getEmail());
+        }
+        return SignupResponse.authenticated(
+                AuthResponse.of(result.user(), result.username(), result.token(), result.refreshToken()));
     }
 }

@@ -43,6 +43,27 @@ public class ResendEmailSender implements EmailSender {
         log.info("Password reset email sent via Resend to {}.", toEmail);
     }
 
+    @Override
+    public void sendEmailVerification(String toEmail, String verifyUrl) {
+        Map<String, Object> body = Map.of(
+                "from",
+                from,
+                "to",
+                List.of(toEmail),
+                "subject",
+                "Verify your Beamcard email",
+                "html",
+                verifyHtml(verifyUrl));
+
+        client.post()
+                .uri("/emails")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .toBodilessEntity();
+        log.info("Email verification sent via Resend to {}.", toEmail);
+    }
+
     private static String html(String resetUrl) {
         return """
                 <p>We received a request to reset your Beamcard password.</p>
@@ -51,5 +72,15 @@ public class ResendEmailSender implements EmailSender {
                 this, you can safely ignore this email.</p>
                 """
                 .formatted(resetUrl);
+    }
+
+    private static String verifyHtml(String verifyUrl) {
+        return """
+                <p>Welcome to Beamcard! Please confirm your email address.</p>
+                <p><a href="%s">Verify my email</a></p>
+                <p>This link expires soon. If you didn't create a Beamcard account, you can
+                safely ignore this email.</p>
+                """
+                .formatted(verifyUrl);
     }
 }
