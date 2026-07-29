@@ -39,6 +39,7 @@
         <spotless.version>2.44.5</spotless.version>
         <palantir-java-format.version>2.50.0</palantir-java-format.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
+        <loki.logback.version>1.5.2</loki.logback.version>
 
         <mockito.version>5.15.2</mockito.version>
     </properties>
@@ -92,6 +93,11 @@
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.github.loki4j</groupId>
+                <artifactId>loki-logback-appender</artifactId>
+                <version>${loki.logback.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
